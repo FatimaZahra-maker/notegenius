@@ -3,11 +3,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#6C63FF",      // violet — couleur principale
-        secondary: "#F5F3FF",    // violet clair — backgrounds
-        easy: "#22C55E",         // vert — bouton Facile
-        hard: "#EF4444",         // rouge — bouton Difficile
-        review: "#F97316",       // orange — bouton À revoir
+        primary: "#7C3AED",
+        secondary: "#EDE9FE",
+        accent: "#06B6D4",
+        easy: "#10B981",
+        hard: "#EF4444",
+        review: "#F59E0B",
+        dark: "#1E1B4B",
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
       }
     }
   }

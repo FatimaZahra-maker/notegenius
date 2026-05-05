@@ -16,37 +16,40 @@ function Navbar() {
   const location = useLocation()
 
   const links = [
-    { to: '/', label: 'Accueil' },
-    { to: '/subjects', label: 'Matières' },
-    { to: '/review', label: 'Révision' },
-    { to: '/dashboard', label: 'Dashboard' },
-    { to: '/pdf', label: 'PDF' },
-    { to: '/flashcards', label: 'Flashcards' },
-    { to: '/quiz', label: 'Quiz' },
-    { to: '/planner', label: 'Planner' },
-    { to: '/guide', label: 'Guide' }
+    { to: '/', label: '🏠 Accueil' },
+    { to: '/subjects', label: '📚 Matières' },
+    { to: '/review', label: '🗓️ Révision' },
+    { to: '/dashboard', label: '📊 Dashboard' },
+    { to: '/pdf', label: '📄 PDF' },
+    { to: '/flashcards', label: '✏️ Flashcards' },
+    { to: '/quiz', label: '📝 Quiz' },
+    { to: '/planner', label: '📅 Planner' },
+    { to: '/guide', label: '📖 Guide' },
   ]
 
   return (
-    <nav className="bg-primary text-white p-4">
-      <div className="hidden md:flex gap-6">
+    <nav className="bg-dark text-white px-8 py-4 flex items-center justify-between shadow-lg">
+      <span className="text-xl font-extrabold tracking-tight text-white">
+        Note<span className="text-accent">Genius</span>
+      </span>
+      <div className="hidden md:flex gap-1">
         {links.map(l => (
-          <Link key={l.to} to={l.to} className={`hover:opacity-75 ${location.pathname === l.to ? 'font-bold underline' : ''}`}>
+          <Link key={l.to} to={l.to}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all
+              ${location.pathname === l.to ? 'bg-primary text-white' : 'text-gray-300 hover:bg-white/10'}`}>
             {l.label}
           </Link>
         ))}
       </div>
-      <div className="md:hidden flex justify-between items-center">
-        <span className="font-bold text-lg">NoteGenius</span>
-        <button onClick={() => setMenuOpen(!menuOpen)} className="text-2xl">
-          {menuOpen ? '✕' : '☰'}
-        </button>
-      </div>
+      <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-2xl">
+        {menuOpen ? '✕' : '☰'}
+      </button>
       {menuOpen && (
-        <div className="md:hidden flex flex-col gap-3 mt-3">
+        <div className="md:hidden absolute top-16 left-0 right-0 bg-dark flex flex-col gap-1 p-4 z-50 shadow-xl">
           {links.map(l => (
             <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)}
-              className={`hover:opacity-75 py-1 ${location.pathname === l.to ? 'font-bold underline' : ''}`}>
+              className={`px-4 py-3 rounded-lg text-sm font-medium transition-all
+                ${location.pathname === l.to ? 'bg-primary text-white' : 'text-gray-300 hover:bg-white/10'}`}>
               {l.label}
             </Link>
           ))}
