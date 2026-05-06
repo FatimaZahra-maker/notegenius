@@ -3,6 +3,7 @@ import { useState, lazy, Suspense } from 'react'
 import Home from './pages/Home'
 import Subjects from './pages/Subjects'
 import Guide from './pages/Guide'
+import APIKeySettings from './pages/APIKeySettings'
 
 const PDFExtractor = lazy(() => import('./components/PDFExtractor'))
 const FlashcardEditor = lazy(() => import('./components/FlashcardEditor'))
@@ -25,6 +26,7 @@ function Navbar() {
     { to: '/quiz', label: '📝 Quiz' },
     { to: '/planner', label: '📅 Planner' },
     { to: '/guide', label: '📖 Guide' },
+    { to: '/settings', label: '⚙️ Paramètres' }
   ]
 
   return (
@@ -74,6 +76,7 @@ function App() {
           <Route path="/quiz" element={<AdaptiveQuiz />} />
           <Route path="/planner" element={<ExamPlanner />} />
           <Route path="/guide" element={<Guide />} />
+          <Route path="/settings" element={<APIKeySettings />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

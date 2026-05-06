@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js`
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString()
 
 export default function PDFExtractor() {
   const [progress, setProgress] = useState(0)
@@ -60,7 +63,7 @@ export default function PDFExtractor() {
         <div className="mt-6">
           <h2 className="text-lg font-bold text-gray-700 mb-2">Aperçu du texte :</h2>
           <div className="bg-secondary p-4 rounded-lg max-h-64 overflow-y-auto text-sm text-gray-600">
-            {extractedText.slice(0, 500)}...
+            {extractedText}...
           </div>
         </div>
       )}
