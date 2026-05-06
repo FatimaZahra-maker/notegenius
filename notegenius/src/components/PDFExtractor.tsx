@@ -1,7 +1,4 @@
 import { useState } from 'react'
-import * as pdfjsLib from 'pdfjs-dist'
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js`
 
 export default function PDFExtractor() {
   const [progress, setProgress] = useState(0)
@@ -16,21 +13,37 @@ export default function PDFExtractor() {
     setProgress(0)
     setExtractedText(null)
 
-    const arrayBuffer = await file.arrayBuffer()
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-    const totalPages = pdf.numPages
-    let fullText = ''
+    try {
+      const pdfjsLib = await import('pdfjs-dist')
+      
+      // ✅ Version 5.x utilise .mjs pas .js
+      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.mjs',
+        import.meta.url
+      ).href
 
-    for (let i = 1; i <= totalPages; i++) {
-      const page = await pdf.getPage(i)
-      const content = await page.getTextContent()
-  const pageText = content.items.map((item) => 'str' in item ? item.str : '').join(' ')
-      fullText += pageText + '\n'
-      setProgress(Math.round((i / totalPages) * 100))
+      const arrayBuffer = await file.arrayBuffer()
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+      const totalPages = pdf.numPages
+      let fullText = ''
+
+      for (let i = 1; i <= totalPages; i++) {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        const pageText = content.items
+          .map((item) => 'str' in item ? item.str : '')
+          .join(' ')
+        fullText += pageText + '\n'
+        setProgress(Math.round((i / totalPages) * 100))
+      }
+
+      setExtractedText(fullText)
+    } catch (error) {
+      console.error('Erreur PDF:', error)
+      alert('Erreur lors de la lecture du PDF. Voir la console.')
+    } finally {
+      setIsLoading(false)
     }
-
-    setExtractedText(fullText)
-    setIsLoading(false)
   }
 
   return (

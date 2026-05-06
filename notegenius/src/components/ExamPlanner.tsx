@@ -1,31 +1,29 @@
 import { useState } from 'react'
+import { generateExamPlan } from '../services/examPlanner'
+import type { ExamPlan } from '../services/examPlanner'
 
 export default function ExamPlanner() {
+  const noteId = 'default-note'
   const [examDate, setExamDate] = useState('')
-  const [planning, setPlanning] = useState<{ week: number; task: string }[]>([])
+  const [plan, setPlan] = useState<ExamPlan | null>(null)
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function generatePlanning() {
+  async function handleGenerate() {
     if (!examDate) return
-    const today = new Date()
-    const exam = new Date(examDate)
-    const diffDays = Math.ceil((exam.getTime() - today.getTime()) / 86400000)
-    const weeks = Math.ceil(diffDays / 7)
-
-    const tasks = [
-      'Réviser les flashcards de base',
-      'Faire les quiz adaptatifs',
-      'Révision intensive + points faibles',
-      'Simulation examen blanc',
-    ]
-
-    const generated = Array.from({ length: Math.min(weeks, 4) }).map((_, i) => ({
-      week: i + 1,
-      task: tasks[i] || 'Révision finale'
-    }))
-
-    setPlanning(generated)
-    setIsOpen(false)
+    try {
+      setIsLoading(true)
+      setError(null)
+      const generated = await generateExamPlan(noteId, examDate)
+      setPlan(generated)
+      setIsOpen(false)
+    } catch (err) {
+      setError('❌ Erreur lors de la génération du planning.')
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -50,12 +48,14 @@ export default function ExamPlanner() {
               onChange={e => setExamDate(e.target.value)}
               className="w-full p-3 border-2 border-gray-200 rounded-xl mb-4 focus:outline-none focus:border-primary"
             />
+            {error && <p className="text-red-500 mb-4">{error}</p>}
             <div className="flex gap-3">
               <button
-                onClick={generatePlanning}
-                className="flex-1 bg-primary text-white py-3 rounded-xl hover:opacity-80"
+                onClick={handleGenerate}
+                disabled={isLoading}
+                className="flex-1 bg-primary text-white py-3 rounded-xl hover:opacity-80 disabled:opacity-50"
               >
-                Générer planning
+                {isLoading ? '⏳ Génération...' : 'Générer planning'}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
@@ -68,13 +68,27 @@ export default function ExamPlanner() {
         </div>
       )}
 
-      {/* Planning */}
-      {planning.length > 0 && (
+      {/* Planning généré */}
+      {plan && (
         <div className="mt-8 flex flex-col gap-4">
-          {planning.map(p => (
-            <div key={p.week} className="bg-secondary rounded-xl p-4">
-              <span className="font-bold text-primary">Semaine {p.week}</span>
-              <p className="text-gray-600 mt-1">{p.task}</p>
+          <p className="text-gray-500 italic">{plan.generalAdvice}</p>
+          {plan.weeklyPlans.map(week => (
+            <div key={week.week} className="bg-secondary rounded-xl p-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-bold text-primary">Semaine {week.week}</span>
+                <span className="text-sm text-gray-400">
+                  {week.startDate} → {week.endDate}
+                </span>
+              </div>
+              <p className="text-gray-600 font-medium mb-2">{week.focus}</p>
+              <ul className="flex flex-col gap-1">
+                {week.tasks.map((task, i) => (
+                  <li key={i} className="text-sm text-gray-500">• {task}</li>
+                ))}
+              </ul>
+              <p className="text-xs text-primary mt-2">
+                🎯 Objectif : {week.targetCards} cartes
+              </p>
             </div>
           ))}
         </div>

@@ -1,5 +1,6 @@
 import  { openDB, type DBSchema } from "idb"
 import type { Note,Flashcard,SM2Card,ReviewSession } from "../types"
+import { getCurrentUser } from './auth'
 
 interface NoteGeniusDB extends DBSchema {
   notes: {
@@ -20,22 +21,27 @@ interface NoteGeniusDB extends DBSchema {
   }
 }
 
-const getDB = () => openDB<NoteGeniusDB>("notegenius-db", 1, {
-  upgrade(db) {
-    if (!db.objectStoreNames.contains("notes")) {
-      db.createObjectStore("notes", { keyPath: "id" })
+const getDB = () => {
+  const user = getCurrentUser()
+  const dbName = user ? `notegenius-db-${user.id}` : 'notegenius-db'
+  
+  return openDB<NoteGeniusDB>(dbName, 1, {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains('notes')) {
+        db.createObjectStore('notes', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('flashcards')) {
+        db.createObjectStore('flashcards', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('sm2cards')) {
+        db.createObjectStore('sm2cards', { keyPath: 'flashcardId' })
+      }
+      if (!db.objectStoreNames.contains('sessions')) {
+        db.createObjectStore('sessions', { keyPath: 'id' })
+      }
     }
-    if (!db.objectStoreNames.contains("flashcards")) {
-      db.createObjectStore("flashcards", { keyPath: "id" })
-    }
-    if (!db.objectStoreNames.contains("sm2cards")) {
-      db.createObjectStore("sm2cards", { keyPath: "flashcardId" })
-    }
-    if (!db.objectStoreNames.contains("sessions")) {
-      db.createObjectStore("sessions", { keyPath: "id" })
-    }
-  }
-})
+  })
+}
 
 export const saveItem = async <T extends keyof NoteGeniusDB>(
   storeName: T,
