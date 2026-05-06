@@ -5,7 +5,8 @@ import type { User } from './services/auth'
 import Home from './pages/Home'
 import Subjects from './pages/Subjects'
 import Guide from './pages/Guide'
-import Login from './pages/login'
+import Login from './pages/Login'
+import APIKeySettings from './pages/APIKeySettings'
 
 const PDFExtractor = lazy(() => import('./components/PDFExtractor'))
 const FlashcardEditor = lazy(() => import('./components/FlashcardEditor'))
@@ -23,10 +24,12 @@ function Navbar({ onLogout, userName }: { onLogout: () => void; userName: string
     { to: '/subjects', label: '📚 Matières' },
     { to: '/review', label: '🗓️ Révision' },
     { to: '/dashboard', label: '📊 Dashboard' },
+    { to: '/pdf', label: '📄 PDF' },
     { to: '/flashcards', label: '✏️ Flashcards' },
     { to: '/quiz', label: '📝 Quiz' },
     { to: '/planner', label: '📅 Planner' },
     { to: '/guide', label: '📖 Guide' },
+    { to: '/settings', label: '⚙️ Paramètres' },
   ]
 
   return (
@@ -44,11 +47,11 @@ function Navbar({ onLogout, userName }: { onLogout: () => void; userName: string
             {l.label}
           </Link>
         ))}
-        <div className="ml-4 flex items-center gap-3">
+        <div className="ml-4 flex items-center gap-3 border-l border-white/20 pl-4">
           <span className="text-gray-400 text-sm">👤 {userName}</span>
           <button
             onClick={onLogout}
-            className="bg-red-500/20 text-red-400 px-3 py-2 rounded-lg text-sm hover:bg-red-500/30"
+            className="bg-red-500/20 text-red-400 px-3 py-2 rounded-lg text-sm hover:bg-red-500/30 transition-all"
           >
             Déconnexion
           </button>
@@ -72,7 +75,7 @@ function Navbar({ onLogout, userName }: { onLogout: () => void; userName: string
             onClick={onLogout}
             className="text-red-400 px-4 py-3 text-left text-sm"
           >
-            🚪 Déconnexion
+            🚪 Déconnexion ({userName})
           </button>
         </div>
       )}
@@ -111,6 +114,7 @@ function AppContent() {
           <Route path="/quiz" element={<AdaptiveQuiz />} />
           <Route path="/planner" element={<ExamPlanner />} />
           <Route path="/guide" element={<Guide />} />
+          <Route path="/settings" element={<APIKeySettings />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Suspense>
