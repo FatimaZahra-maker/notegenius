@@ -1,3 +1,6 @@
+import { useNavigate } from 'react-router-dom'
+import MemorizationDashboard from '../components/MemorizationDashboard'
+
 export default function Dashboard() {
-  return <div className="p-8 text-2xl font-bold text-primary">Dashboard 📊</div>
+  return <MemorizationDashboard />
 }

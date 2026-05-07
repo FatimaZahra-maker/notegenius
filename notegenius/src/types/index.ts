@@ -1,13 +1,15 @@
-// ─── UNE NOTE ───
+// ── Note / Matière
 export interface Note {
   id: string
   title: string
+  description?: string
+  color: string
   content: string
   createdAt: number
   updatedAt: number
 }
 
-// ─── UNE FLASHCARD ───
+// ── Flashcard
 export interface Flashcard {
   id: string
   noteId: string
@@ -16,7 +18,7 @@ export interface Flashcard {
   createdAt: number
 }
 
-// ─── DONNÉES SM-2 ───
+// ── SM-2
 export interface SM2Card {
   flashcardId: string
   interval: number
@@ -26,11 +28,11 @@ export interface SM2Card {
   lastReview: number
 }
 
-// ─── ÉVALUATION ───
+// ── Évaluation SM-2
 export type ReviewGrade = 0 | 1 | 2
 // 0 = À revoir | 1 = Difficile | 2 = Facile
 
-// ─── QUESTION DE QUIZ ───
+// ── Question de quiz
 export interface QuizQuestion {
   id: string
   flashcardId: string
@@ -39,11 +41,27 @@ export interface QuizQuestion {
   correctIndex: number
 }
 
-// ─── SESSION DE RÉVISION ───
+// ── Session de révision
 export interface ReviewSession {
   id: string
   date: number
   cardsReviewed: number
   correctCount: number
   noteId: string
+}
+
+// ── Utilisateur
+export interface User {
+  id: string
+  name: string
+  email: string
+  bio?: string
+  createdAt: number
+}
+
+// ── Préférences
+export interface UserPreferences {
+  theme: 'light' | 'dark'
+  dailyGoal: number
+  animations: boolean
 }
