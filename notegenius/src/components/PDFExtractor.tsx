@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
-import { generateFlashcards, generateQuiz, generateSummary } from '../services/claude'
+import { generateFlashcards, generateQuiz, generateSummary } from '../services/gemini'
 import { saveItem } from '../services/db'
 import { createInitialSM2Data } from '../algorithms/sm2'
 import type { Flashcard, QuizQuestion } from '../types'
@@ -21,20 +21,15 @@ export default function PDFExtractor() {
   const [mode, setMode] = useState<Mode>(null)
   const [fileName, setFileName] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-
-  // Résultats
   const [flashcards, setFlashcards] = useState<Flashcard[]>([])
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([])
   const [summary, setSummary] = useState<string | null>(null)
 
-  // ── Texte final à envoyer à Claude
   const finalText = extractedText || manualText
 
-  // ── Extraction PDF
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-
     setFileName(file.name)
     setExtractedText(null)
     setError(null)
@@ -44,13 +39,11 @@ export default function PDFExtractor() {
     setQuizQuestions([])
     setSummary(null)
     setMode(null)
-
     try {
       const arrayBuffer = await file.arrayBuffer()
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
       const totalPages = pdf.numPages
       let fullText = ''
-
       for (let i = 1; i <= totalPages; i++) {
         const page = await pdf.getPage(i)
         const content = await page.getTextContent()
@@ -60,30 +53,25 @@ export default function PDFExtractor() {
         fullText += pageText + '\n'
         setProgress(Math.round((i / totalPages) * 100))
       }
-
       setExtractedText(fullText.trim())
       setStatus('idle')
-    } catch (err) {
+    } catch {
       setError('❌ Erreur lors de la lecture du PDF.')
       setStatus('error')
-      console.error(err)
     }
   }
 
-  // ── Générer selon le mode choisi
   async function handleGenerate(selectedMode: Mode) {
     if (!finalText.trim()) {
       setError('❌ Veuillez uploader un PDF ou saisir du texte.')
       return
     }
-
     setMode(selectedMode)
     setError(null)
     setStatus('generating')
     setFlashcards([])
     setQuizQuestions([])
     setSummary(null)
-
     try {
       if (selectedMode === 'flashcards') {
         const generated = await generateFlashcards(finalText)
@@ -100,7 +88,6 @@ export default function PDFExtractor() {
           saveItem('sm2cards', createInitialSM2Data(card.id))
         ))
         setFlashcards(cards)
-
       } else if (selectedMode === 'quiz') {
         const generated = await generateQuiz(finalText)
         const questions: QuizQuestion[] = generated.map((q: QuizQuestion) => ({
@@ -108,44 +95,46 @@ export default function PDFExtractor() {
           id: crypto.randomUUID()
         }))
         setQuizQuestions(questions)
-
       } else if (selectedMode === 'summary') {
         const result = await generateSummary(finalText)
         setSummary(result)
       }
-
       setStatus('done')
-    } catch (err) {
-      setError('❌ Erreur lors de la génération. Vérifiez votre clé API dans Paramètres.')
+    } catch {
+      setError('❌ Erreur de génération. Réessayez.')
       setStatus('error')
-      console.error(err)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-dark">Traitement de Notes 📄</h1>
+          <h1 className="text-3xl font-extrabold text-dark">
+            Traitement de Notes
+            <span className="ml-2 text-2xl">📄</span>
+          </h1>
           <p className="text-gray-500 mt-1">
-            Uploadez un PDF ou saisissez du texte — Claude génère vos ressources
+            Uploadez un PDF ou saisissez du texte — l'IA génère vos ressources
           </p>
         </div>
 
-        {/* Zone upload + texte */}
+        {/* Zone input */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            {/* Upload PDF */}
+            {/* Upload */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">
                 📂 Uploader un PDF
               </label>
               <label className="cursor-pointer block">
                 <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all
-                  ${fileName ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-50'}`}>
+                  ${fileName
+                    ? 'border-primary bg-primary/5'
+                    : 'border-gray-300 hover:border-primary hover:bg-gray-50'}`}>
                   {status === 'extracting' ? (
                     <div>
                       <p className="text-primary font-medium mb-3">
@@ -163,23 +152,18 @@ export default function PDFExtractor() {
                       <p className="text-2xl mb-2">✅</p>
                       <p className="text-primary font-bold text-sm">{fileName}</p>
                       <p className="text-gray-400 text-xs mt-1">
-                        {extractedText?.length.toLocaleString()} caractères extraits
+                        {extractedText?.length.toLocaleString()} caractères
                       </p>
                     </div>
                   ) : (
                     <div>
                       <p className="text-3xl mb-2">📂</p>
-                      <p className="text-gray-500 text-sm">Glissez ou cliquez pour uploader</p>
+                      <p className="text-gray-500 text-sm">Cliquez ou glissez</p>
                       <p className="text-gray-400 text-xs mt-1">PDF uniquement</p>
                     </div>
                   )}
                 </div>
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFile}
-                  className="hidden"
-                />
+                <input type="file" accept=".pdf" onChange={handleFile} className="hidden" />
               </label>
             </div>
 
@@ -196,7 +180,7 @@ export default function PDFExtractor() {
                   setFileName(null)
                 }}
                 placeholder="Collez votre cours ici..."
-                className="w-full h-40 p-4 border-2 border-gray-200 rounded-xl resize-none focus:outline-none focus:border-primary text-sm text-gray-700"
+                className="w-full h-40 p-4 border-2 border-gray-200 rounded-xl resize-none focus:outline-none focus:border-primary text-sm"
               />
               {manualText && (
                 <p className="text-xs text-gray-400 mt-1">
@@ -207,26 +191,13 @@ export default function PDFExtractor() {
           </div>
         </div>
 
-        {/* Aperçu du texte extrait */}
-        {extractedText && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-            <h2 className="text-sm font-bold text-gray-700 mb-3">
-              👁️ Aperçu du texte extrait
-            </h2>
-            <div className="bg-gray-50 rounded-xl p-4 max-h-32 overflow-y-auto text-xs text-gray-600 leading-relaxed">
-              {extractedText.slice(0, 300)}
-              {extractedText.length > 300 && '...'}
-            </div>
-          </div>
-        )}
-
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
 
-        {/* Boutons de génération */}
+        {/* Boutons génération */}
         {finalText.trim() && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
             <h2 className="text-sm font-bold text-gray-700 mb-4">
@@ -238,21 +209,21 @@ export default function PDFExtractor() {
                   key: 'flashcards' as Mode,
                   icon: '🃏',
                   title: 'Flashcards',
-                  desc: 'Cartes question/réponse pour mémoriser',
+                  desc: 'Cartes question/réponse',
                   color: 'from-violet-500 to-purple-600'
                 },
                 {
                   key: 'quiz' as Mode,
                   icon: '📝',
                   title: 'Quiz QCM',
-                  desc: 'Questions à choix multiples pour tester',
+                  desc: 'Questions à choix multiples',
                   color: 'from-cyan-500 to-blue-600'
                 },
                 {
                   key: 'summary' as Mode,
                   icon: '📋',
                   title: 'Résumé',
-                  desc: 'Synthèse structurée du contenu',
+                  desc: 'Synthèse structurée',
                   color: 'from-emerald-500 to-green-600'
                 }
               ].map(btn => (
@@ -262,9 +233,7 @@ export default function PDFExtractor() {
                   disabled={status === 'generating' || status === 'extracting'}
                   className={`relative overflow-hidden rounded-2xl p-5 text-left transition-all
                     hover:-translate-y-1 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed
-                    ${mode === btn.key && status === 'generating'
-                      ? 'ring-2 ring-primary'
-                      : 'bg-white border-2 border-gray-100 hover:border-primary/30'}`}
+                    bg-white border-2 border-gray-100 hover:border-primary/30`}
                 >
                   <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r ${btn.color} mb-3`}>
                     <span className="text-xl">{btn.icon}</span>
@@ -272,7 +241,7 @@ export default function PDFExtractor() {
                   <h3 className="font-bold text-gray-800 mb-1">{btn.title}</h3>
                   <p className="text-xs text-gray-500">{btn.desc}</p>
                   {mode === btn.key && status === 'generating' && (
-                    <div className="absolute inset-0 bg-primary/5 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-primary/5 flex items-center justify-center rounded-2xl">
                       <p className="text-primary font-bold text-sm">⏳ Génération...</p>
                     </div>
                   )}
@@ -300,13 +269,9 @@ export default function PDFExtractor() {
                     <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg h-fit">
                       {i + 1}
                     </span>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-800 text-sm mb-1">
-                        ❓ {card.front}
-                      </p>
-                      <p className="text-gray-500 text-sm">
-                        💡 {card.back}
-                      </p>
+                    <div>
+                      <p className="font-medium text-gray-800 text-sm mb-1">❓ {card.front}</p>
+                      <p className="text-gray-500 text-sm">💡 {card.back}</p>
                     </div>
                   </div>
                 </div>
@@ -346,7 +311,7 @@ export default function PDFExtractor() {
           </div>
         )}
 
-        {/* Résultat Résumé */}
+        {/* Résumé */}
         {summary && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h2 className="font-bold text-gray-800 mb-4">📋 Résumé généré</h2>

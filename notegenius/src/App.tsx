@@ -5,8 +5,8 @@ import type { User } from './services/auth'
 import Home from './pages/Home'
 import Subjects from './pages/Subjects'
 import Guide from './pages/Guide'
-import Login from './pages/Login'
-import APIKeySettings from './pages/APIKeySettings'
+import Login from './pages/login'
+
 
 const PDFExtractor = lazy(() => import('./components/PDFExtractor'))
 const FlashcardEditor = lazy(() => import('./components/FlashcardEditor'))
@@ -114,7 +114,6 @@ function AppContent() {
           <Route path="/quiz" element={<AdaptiveQuiz />} />
           <Route path="/planner" element={<ExamPlanner />} />
           <Route path="/guide" element={<Guide />} />
-          <Route path="/settings" element={<APIKeySettings />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Suspense>

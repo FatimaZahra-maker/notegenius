@@ -1,163 +1,145 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { useReviewSession } from '../hooks/useReviewSession'
-import type { ReviewGrade } from '../types'
+import type { Flashcard } from '../types/index'
+
+const sampleCards: Flashcard[] = [
+  { id: '1', noteId: '1', front: "C'est quoi React?", back: 'Une bibliothèque JavaScript pour créer des interfaces', createdAt: 0 },
+  { id: '2', noteId: '1', front: "C'est quoi TypeScript?", back: 'JavaScript avec des types statiques', createdAt: 0 },
+  { id: '3', noteId: '1', front: "C'est quoi Tailwind?", back: 'Un framework CSS utility-first', createdAt: 0 },
+]
 
 export default function FlashcardReviewSession() {
-  const noteId = 'default-note'
-  const {
-    current,
-    currentIndex,
-    totalCards,
-    correctCount,
-    sessionState,
-    startSession,
-    submitGrade,
-    resetSession
-  } = useReviewSession(noteId)
-
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
+
+  const card = sampleCards[currentIndex]
 
   function flipCard() {
     setIsFlipped(prev => !prev)
   }
 
-  async function handleGrade(grade: ReviewGrade) {
+  function nextCard() {
     setIsFlipped(false)
-    setTimeout(async () => {
-      await submitGrade(grade)
-    }, 200)
+    setTimeout(() => {
+      setCurrentIndex(prev => (prev + 1) % sampleCards.length)
+    }, 300)
   }
 
-  // ── Chargement
-  if (sessionState === 'loading') {
-    return (
-      <div className="p-8 flex items-center justify-center">
-        <p className="text-primary text-xl">⏳ Chargement...</p>
-      </div>
-    )
-  }
-
-  // ── Pas de cartes à réviser
-  if (sessionState === 'idle') {
-    return (
-      <div className="p-8 flex flex-col items-center gap-6">
-        <h1 className="text-2xl font-bold text-primary">Révision 🗓️</h1>
-        {totalCards === 0 ? (
-          <div className="bg-secondary rounded-2xl p-8 text-center">
-            <p className="text-gray-500 text-lg">
-              ✅ Aucune carte à réviser aujourd'hui !
-            </p>
-            <p className="text-gray-400 text-sm mt-2">
-              Revenez demain ou uploadez de nouvelles notes.
-            </p>
-          </div>
-        ) : (
-          <button
-            onClick={startSession}
-            className="bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:opacity-80"
-          >
-            🚀 Commencer la révision ({totalCards} cartes)
-          </button>
-        )}
-      </div>
-    )
-  }
-
-  // ── Session terminée
-  if (sessionState === 'finished') {
-    const rate = totalCards > 0 ? Math.round((correctCount / totalCards) * 100) : 0
-    return (
-      <div className="p-8 flex flex-col items-center gap-6">
-        <h1 className="text-2xl font-bold text-primary">Résultat 🎉</h1>
-        <div className="bg-secondary rounded-2xl p-8 text-center">
-          <p className="text-5xl font-bold text-primary mb-2">
-            {correctCount} / {totalCards}
-          </p>
-          <p className="text-gray-500">Taux de maîtrise : {rate}%</p>
-        </div>
-        <button
-          onClick={resetSession}
-          className="bg-primary text-white px-6 py-3 rounded-xl hover:opacity-80"
-        >
-          🔄 Recommencer
-        </button>
-      </div>
-    )
-  }
-
-  // ── Session en cours
-  if (!current) return null
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'ArrowDown') flipCard()
+      if (e.key === 'ArrowRight') nextCard()
+      if (e.key === '1' || e.key === '2' || e.key === '3') nextCard()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isFlipped, currentIndex])
 
   return (
     <div className="p-8 flex flex-col items-center">
       <h1 className="text-2xl font-bold text-primary mb-8">Révision 🗓️</h1>
 
-      {/* Progression */}
-      <div className="w-full max-w-md mb-8">
+      {/* Barre de progression */}
+      <div className="w-full max-w-md mb-10">
         <div className="flex justify-between text-sm text-gray-500 mb-2">
           <span>Progression</span>
-          <span>{currentIndex + 1} / {totalCards}</span>
+          <span>{currentIndex + 1} / {sampleCards.length}</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div
-            className="bg-primary h-3 rounded-full transition-all"
-            style={{ width: `${((currentIndex + 1) / totalCards) * 100}%` }}
+            className="bg-primary h-3 rounded-full transition-all duration-300"
+            style={{ width: `${((currentIndex + 1) / sampleCards.length) * 100}%` }}
           />
         </div>
       </div>
 
-      {/* Carte flip 3D */}
+      {/* Carte 3D */}
       <div
         onClick={flipCard}
-        className="cursor-pointer w-96 h-56"
-        style={{ perspective: '1000px' }}
+        className="cursor-pointer w-96 h-60"
+        style={{ perspective: '1200px' }}
       >
         <motion.div
           animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.5 }}
-          style={{ transformStyle: 'preserve-3d', position: 'relative', width: '100%', height: '100%' }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+          style={{
+            transformStyle: 'preserve-3d',
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+          }}
         >
+          {/* RECTO — Question */}
           <div
-            className="absolute inset-0 bg-white border-2 border-primary rounded-2xl flex items-center justify-center p-6 text-center text-lg font-semibold text-gray-700"
-            style={{ backfaceVisibility: 'hidden' }}
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+            }}
+            className="absolute inset-0 bg-white border-2 border-primary rounded-2xl shadow-xl
+                       flex flex-col items-center justify-center p-8 text-center"
           >
-            {current.flashcard.front}
+            <p className="text-xs font-bold text-primary/40 uppercase tracking-widest mb-4">
+              Question
+            </p>
+            <p className="text-lg font-semibold text-gray-800 leading-relaxed">
+              {card.front}
+            </p>
+            <p className="text-xs text-gray-300 mt-6">
+              🖱️ Cliquez pour retourner
+            </p>
           </div>
+
+          {/* VERSO — Réponse */}
           <div
-            className="absolute inset-0 bg-primary rounded-2xl flex items-center justify-center p-6 text-center text-lg font-semibold text-white"
-            style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+            }}
+            className="absolute inset-0 bg-gradient-to-br from-primary to-violet-700 rounded-2xl shadow-xl
+                       flex flex-col items-center justify-center p-8 text-center"
           >
-            {current.flashcard.back}
+            <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">
+              Réponse
+            </p>
+            <p className="text-lg font-semibold text-white leading-relaxed">
+              {card.back}
+            </p>
           </div>
         </motion.div>
       </div>
 
-      <p className="text-gray-400 mt-4 text-sm">⬇️ Retourner | ➡️ Suivant</p>
+      <p className="text-gray-400 mt-6 text-sm">
+        ⬇️ Retourner &nbsp;|&nbsp; ➡️ Suivant &nbsp;|&nbsp; 1/2/3 Évaluer
+      </p>
 
-      {/* Boutons évaluation */}
+      {/* Boutons d'évaluation — visibles uniquement après flip */}
       {isFlipped && (
         <div className="flex gap-4 mt-8">
           <button
-            onClick={() => handleGrade(2)}
-            className="bg-green-500 text-white px-6 py-3 rounded-xl font-bold hover:opacity-80"
+            onClick={nextCard}
+            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-md"
           >
             😊 Facile
           </button>
           <button
-            onClick={() => handleGrade(1)}
-            className="bg-orange-400 text-white px-6 py-3 rounded-xl font-bold hover:opacity-80"
+            onClick={nextCard}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-md"
           >
-            🤔 Difficile
+            🤔 À revoir
           </button>
           <button
-            onClick={() => handleGrade(0)}
-            className="bg-red-500 text-white px-6 py-3 rounded-xl font-bold hover:opacity-80"
+            onClick={nextCard}
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-md"
           >
-            😰 À revoir
+            😰 Difficile
           </button>
         </div>
       )}
+
+      <div className="mt-6 text-gray-400 text-sm">
+        Carte {currentIndex + 1} / {sampleCards.length}
+      </div>
     </div>
   )
 }

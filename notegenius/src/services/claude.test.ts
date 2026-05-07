@@ -1,6 +1,6 @@
 // src/services/claude.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { generateFlashcards, generateQuiz, generateSummary } from "./claude"
+import { generateFlashcards, generateQuiz, generateSummary } from "./gemini"
 
 // ── Mock du module apiKey
 vi.mock("./apiKey", () => ({
