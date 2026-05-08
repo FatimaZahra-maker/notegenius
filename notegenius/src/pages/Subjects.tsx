@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAllItems, saveItem, deleteItem } from '../services/db'
-import { generateFlashcards } from '../services/gemini'
+import { generateFlashcards } from '../services/ai'
 import { createInitialSM2Data } from '../algorithms/sm2'
 import type { Note, Flashcard } from '../types'
 import toast from 'react-hot-toast'

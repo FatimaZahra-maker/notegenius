@@ -1,4 +1,4 @@
-import { generateExamPlanText } from './gemini'
+import { generateExamPlanText } from './ai'
 import { getSubjectStats } from './statsService'
 import { getAllItems } from './db'
 

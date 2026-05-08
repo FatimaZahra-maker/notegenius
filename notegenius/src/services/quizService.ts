@@ -1,5 +1,5 @@
 import { getAllItems } from './db'
-import { generateQuiz } from './gemini'
+import { generateQuiz } from './ai'
 import type { QuizQuestion, Flashcard } from '../types'
 
 export interface AdaptiveQuizQuestion extends QuizQuestion {
@@ -20,7 +20,7 @@ export const generateAdaptiveQuiz = async (
 
   const noteFlashcards = allFlashcards.filter(card => card.noteId === noteId)
   if (noteFlashcards.length === 0) {
-    throw new Error('Aucune flashcard trouvée pour cette note.')
+    throw new Error('Aucune flashcard trouvée. Uploadez d\'abord un PDF.')
   }
 
   const sm2Index = new Map(allSM2Cards.map(sm2 => [sm2.flashcardId, sm2]))
