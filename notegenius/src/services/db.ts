@@ -1,5 +1,5 @@
 import { openDB, type DBSchema } from 'idb'
-import type { Note, Flashcard, SM2Card, ReviewSession } from '../types'
+import type { Note, Flashcard, SM2Card, ReviewSession, Summary } from '../types'
 import { getCurrentUser } from './auth'
 
 interface NoteGeniusDB extends DBSchema {
@@ -7,14 +7,14 @@ interface NoteGeniusDB extends DBSchema {
   flashcards: { key: string; value: Flashcard }
   sm2cards: { key: string; value: SM2Card }
   sessions: { key: string; value: ReviewSession }
+  summaries: { key: string; value: Summary }
 }
 
-// ── Base de données isolée par utilisateur
 const getDB = () => {
   const user = getCurrentUser()
   const dbName = user ? `notegenius-db-${user.id}` : 'notegenius-db'
 
-  return openDB<NoteGeniusDB>(dbName, 1, {
+  return openDB<NoteGeniusDB>(dbName, 2, {
     upgrade(db) {
       if (!db.objectStoreNames.contains('notes'))
         db.createObjectStore('notes', { keyPath: 'id' })
@@ -24,6 +24,8 @@ const getDB = () => {
         db.createObjectStore('sm2cards', { keyPath: 'flashcardId' })
       if (!db.objectStoreNames.contains('sessions'))
         db.createObjectStore('sessions', { keyPath: 'id' })
+      if (!db.objectStoreNames.contains('summaries'))
+        db.createObjectStore('summaries', { keyPath: 'id' })
     }
   })
 }

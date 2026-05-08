@@ -1,26 +1,14 @@
-// src/hooks/useStats.ts
-import { useState, useEffect, useCallback } from "react"
-import type { SubjectStats, HeatmapEntry, MemorizationPoint, GlobalStats } from "../services/statsService"
-import {
-  getSubjectStats,
-  getHeatmapData,
-  getMemorizationCurve,
-  getGlobalStats
-} from "../services/statsService"
+import { useState, useEffect, useCallback } from 'react'
+import type { SubjectStats, HeatmapEntry, MemorizationPoint, GlobalStats } from '../services/statsService'
+import { getSubjectStats, getHeatmapData, getMemorizationCurve, getGlobalStats } from '../services/statsService'
 
-// ── Types de retour
 interface UseStatsReturn {
-  // Données
   subjectStats: SubjectStats | null
   heatmapData: HeatmapEntry[]
   memorizationCurve: MemorizationPoint[]
   globalStats: GlobalStats | null
-
-  // État
   isLoading: boolean
   error: string | null
-
-  // Actions
   refresh: () => Promise<void>
 }
 
@@ -32,42 +20,37 @@ export function useStats(noteId: string): UseStatsReturn {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // ── Charger toutes les stats en parallèle
   const load = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
 
-      const [subject, heatmap, curve, global] = await Promise.all([
-        getSubjectStats(noteId),
-        getHeatmapData(),
-        getMemorizationCurve(noteId),
-        getGlobalStats()
+      const [global, heatmap] = await Promise.all([
+        getGlobalStats(),
+        getHeatmapData()
       ])
 
-      setSubjectStats(subject)
-      setHeatmapData(heatmap)
-      setMemorizationCurve(curve)
       setGlobalStats(global)
+      setHeatmapData(heatmap)
+
+      // Stats par note seulement si noteId valide
+      if (noteId && noteId !== 'default') {
+        const [subject, curve] = await Promise.all([
+          getSubjectStats(noteId),
+          getMemorizationCurve(noteId)
+        ])
+        setSubjectStats(subject)
+        setMemorizationCurve(curve)
+      }
     } catch (err) {
-      setError("Erreur lors du chargement des statistiques.")
+      setError('Erreur lors du chargement des statistiques.')
       console.error(err)
     } finally {
       setIsLoading(false)
     }
   }, [noteId])
 
-  useEffect(() => {
-    load()
-  }, [load])
+  useEffect(() => { load() }, [load])
 
-  return {
-    subjectStats,
-    heatmapData,
-    memorizationCurve,
-    globalStats,
-    isLoading,
-    error,
-    refresh: load
-  }
+  return { subjectStats, heatmapData, memorizationCurve, globalStats, isLoading, error, refresh: load }
 }

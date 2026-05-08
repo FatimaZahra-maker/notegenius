@@ -30,7 +30,6 @@ export interface SM2Card {
 
 // ── Évaluation SM-2
 export type ReviewGrade = 0 | 1 | 2
-// 0 = À revoir | 1 = Difficile | 2 = Facile
 
 // ── Question de quiz
 export interface QuizQuestion {
@@ -48,6 +47,15 @@ export interface ReviewSession {
   cardsReviewed: number
   correctCount: number
   noteId: string
+}
+
+// ── Résumé sauvegardé
+export interface Summary {
+  id: string
+  noteId: string
+  noteTitle: string
+  content: string
+  createdAt: number
 }
 
 // ── Utilisateur

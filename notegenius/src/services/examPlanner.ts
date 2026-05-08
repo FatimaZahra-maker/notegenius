@@ -46,13 +46,23 @@ export const generateExamPlan = async (
     examDate
   })
 
-  const parsed = JSON.parse(rawJson)
+  try {
+    const parsed = JSON.parse(rawJson)
 
-  return {
-    noteId,
-    examDate,
-    totalWeeks: weeksRemaining,
-    weeklyPlans: parsed.weeklyPlans,
-    generalAdvice: parsed.generalAdvice
+    // Validation robuste
+    if (!parsed.weeklyPlans || !Array.isArray(parsed.weeklyPlans)) {
+      throw new Error('Format weeklyPlans invalide')
+    }
+
+    return {
+      noteId,
+      examDate,
+      totalWeeks: weeksRemaining,
+      weeklyPlans: parsed.weeklyPlans,
+      generalAdvice: parsed.generalAdvice || 'Travaillez régulièrement et révisez vos points faibles.'
+    }
+  } catch (err) {
+    console.error('Parsing error:', err, 'Raw JSON:', rawJson)
+    throw new Error('Impossible de parser le planning. Réessayez.')
   }
 }

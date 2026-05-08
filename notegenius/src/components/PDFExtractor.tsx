@@ -4,6 +4,7 @@ import { generateFlashcards,generateQuiz,generateSummary } from '../services/ai'
 import { saveItem } from '../services/db'
 import { createInitialSM2Data } from '../algorithms/sm2'
 import type { Flashcard, QuizQuestion, Note } from '../types'
+import { createAndSaveSummary } from '../services/summaryService'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -126,9 +127,18 @@ export default function PDFExtractor() {
         setQuizQuestions(questions)
 
       } else if (selectedMode === 'summary') {
-        const result = await generateSummary(finalText)
-        setSummary(result)
-      }
+  // Importer createAndSaveSummary en haut du fichier
+  const { createAndSaveSummary } = await import('../services/summaryService')
+  const noteTitleForSummary = fileName
+    ? fileName.replace('.pdf', '').replace('.txt', '')
+    : 'Résumé sans titre'
+  const savedSummary = await createAndSaveSummary(
+    crypto.randomUUID(),
+    noteTitleForSummary,
+    finalText
+  )
+  setSummary(savedSummary.content)
+}
 
       setStatus('done')
     } catch (err) {

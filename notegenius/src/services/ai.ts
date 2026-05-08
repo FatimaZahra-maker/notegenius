@@ -1,17 +1,11 @@
-// ── Service IA utilisant Groq API
-// Groq offre des inférences ultra-rapides avec des modèles open-source
-
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-
-// ── Modèle recommandé : llama-3.3-70b-versatile (gratuit, très performant)
 const MODEL = 'llama-3.3-70b-versatile'
 
 if (!GROQ_API_KEY) {
   console.error('⚠️ VITE_GROQ_API_KEY manquante dans .env')
 }
 
-// ── Fonction utilitaire principale
 async function callGroq(prompt: string, maxTokens = 2000): Promise<string> {
   if (!GROQ_API_KEY) {
     throw new Error('Clé API Groq manquante. Vérifiez votre fichier .env')
@@ -30,7 +24,7 @@ async function callGroq(prompt: string, maxTokens = 2000): Promise<string> {
       messages: [
         {
           role: 'system',
-          content: 'Tu es un assistant pédagogique expert. Tu réponds toujours en JSON valide quand demandé.'
+          content: 'Tu es un assistant pédagogique expert. Tu réponds TOUJOURS en JSON valide strict quand demandé, sans markdown, sans backticks, sans texte avant ou après.'
         },
         {
           role: 'user',
@@ -49,84 +43,63 @@ async function callGroq(prompt: string, maxTokens = 2000): Promise<string> {
   return data.choices?.[0]?.message?.content || ''
 }
 
-// ── Générer des flashcards
+// ── Nettoyer la réponse JSON (enlever backticks markdown)
+function cleanJSON(text: string): string {
+  return text
+    .replace(/```json/gi, '')
+    .replace(/```/g, '')
+    .trim()
+}
+
 export async function generateFlashcards(text: string) {
-  const prompt = `Tu es un professeur expert. Génère exactement 15 flashcards pertinentes à partir du texte suivant.
-
-IMPORTANT : Retourne UNIQUEMENT du JSON valide, sans texte avant ou après, sans backticks.
-Format requis :
-[
-  { "front": "Question claire et précise", "back": "Réponse concise (1-2 phrases)" }
-]
-
-Texte à analyser :
-"""
-${text.slice(0, 6000)}
-"""`
+  const prompt = `Génère exactement 15 flashcards pédagogiques à partir du texte.
+Retourne UNIQUEMENT un tableau JSON valide. Aucun texte avant ou après.
+Format : [{"front": "Question claire", "back": "Réponse concise"}]
+Texte : """${text.slice(0, 6000)}"""`
 
   const response = await callGroq(prompt, 3000)
-
   try {
-    const clean = response.match(/\[[\s\S]*\]/)?.[0] || response
-    return JSON.parse(clean)
+    const clean = cleanJSON(response)
+    const arr = clean.match(/\[[\s\S]*\]/)?.[0] || clean
+    return JSON.parse(arr)
   } catch {
     throw new Error('Format invalide retourné par l\'IA. Réessayez.')
   }
 }
 
-// ── Générer un quiz QCM
 export async function generateQuiz(text: string) {
-  const prompt = `Tu es un professeur expert. Crée exactement 5 questions QCM à partir du texte suivant.
-
-IMPORTANT : Retourne UNIQUEMENT du JSON valide, sans texte avant ou après, sans backticks.
-Format requis :
-[
-  {
-    "question": "Question claire ?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctIndex": 0
-  }
-]
-
-Règles :
-- Exactement 4 options par question
-- correctIndex est l'index (0, 1, 2 ou 3) de la bonne réponse
-- Les mauvaises réponses doivent être plausibles
-
-Texte :
-"""
-${text.slice(0, 6000)}
-"""`
+  const prompt = `Crée exactement 5 questions QCM pédagogiques à partir du texte.
+Retourne UNIQUEMENT un tableau JSON valide. Aucun texte avant ou après.
+Format exact : [{"question": "Question?", "options": ["A", "B", "C", "D"], "correctIndex": 0}]
+Règles: exactement 4 options, correctIndex entre 0 et 3, mauvaises réponses plausibles.
+Texte : """${text.slice(0, 6000)}"""`
 
   const response = await callGroq(prompt, 2000)
-
   try {
-    const clean = response.match(/\[[\s\S]*\]/)?.[0] || response
-    return JSON.parse(clean)
+    const clean = cleanJSON(response)
+    const arr = clean.match(/\[[\s\S]*\]/)?.[0] || clean
+    return JSON.parse(arr)
   } catch {
     throw new Error('Format invalide retourné par l\'IA. Réessayez.')
   }
 }
 
-// ── Générer un résumé
 export async function generateSummary(text: string): Promise<string> {
-  const prompt = `Tu es un expert en synthèse pédagogique. Résume le texte suivant de façon claire et structurée.
+  const prompt = `Tu es un expert en pédagogie. Crée un résumé structuré du texte suivant.
 
-Format :
-- Utilise des titres avec ##
-- Utilise des tirets pour les points clés
-- Maximum 30% de la longueur originale
-- Mets en avant les concepts les plus importants
+Le résumé doit contenir :
+1. Un titre principal
+2. Les concepts clés (liste avec puces)
+3. Les points importants par section
+4. Une synthèse finale
+5. Les mots/formules à retenir
 
-Texte :
-"""
-${text.slice(0, 6000)}
-"""`
+Utilise des émojis pour chaque section pour faciliter la lecture.
+Texte : """${text.slice(0, 6000)}"""`
 
-  return await callGroq(prompt, 1500)
+  return await callGroq(prompt, 2000)
 }
 
-// ── Générer un planning d'examen
 export async function generateExamPlanText(ctx: {
   noteTitle: string
   totalCards: number
@@ -135,40 +108,23 @@ export async function generateExamPlanText(ctx: {
   weeksRemaining: number
   examDate: string
 }): Promise<string> {
-  const prompt = `Tu es un coach pédagogique expert. Un étudiant prépare son examen de "${ctx.noteTitle}".
+  const today = new Date()
+  const prompt = `Tu es un coach pédagogique. Génère un planning de révision.
+Matière: "${ctx.noteTitle}"
+Données: ${ctx.totalCards} flashcards, ${ctx.masteryRate}% maîtrise, ${ctx.weakCards} points faibles, ${ctx.weeksRemaining} semaines, examen le ${ctx.examDate}.
+Date de début: ${today.toISOString().slice(0, 10)}
 
-Profil de l'étudiant :
-- Flashcards totales : ${ctx.totalCards}
-- Taux de maîtrise actuel : ${ctx.masteryRate}%
-- Points faibles : ${ctx.weakCards} cartes difficiles
-- Semaines avant l'examen : ${ctx.weeksRemaining}
-- Date d'examen : ${ctx.examDate}
+Retourne UNIQUEMENT ce JSON valide:
+{"weeklyPlans":[{"week":1,"startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","focus":"Thème","tasks":["Tâche 1","Tâche 2","Tâche 3"],"targetCards":20}],"generalAdvice":"Conseil personnalisé"}
 
-Génère un planning de révision semaine par semaine adapté à ce profil.
-
-IMPORTANT : Retourne UNIQUEMENT du JSON valide, sans texte avant ou après, sans backticks.
-Format requis :
-{
-  "weeklyPlans": [
-    {
-      "week": 1,
-      "startDate": "YYYY-MM-DD",
-      "endDate": "YYYY-MM-DD",
-      "focus": "Thème principal de la semaine",
-      "tasks": ["Tâche concrète 1", "Tâche concrète 2", "Tâche concrète 3"],
-      "targetCards": 20
-    }
-  ],
-  "generalAdvice": "Conseil personnalisé selon le profil de l'étudiant"
-}
-
-Règles :
-- Commence progressivement la semaine 1
-- Intensifie sur les points faibles aux semaines intermédiaires
-- Dernière semaine : révision globale et simulation
-- Les tâches doivent être concrètes et actionnables`
+Règles:
+- Génère exactement ${ctx.weeksRemaining} semaines
+- Calcule les vraies dates à partir du ${today.toISOString().slice(0, 10)}
+- Progression croissante d'intensité
+- Dernière semaine = révision globale`
 
   const response = await callGroq(prompt, 2000)
-  const clean = response.match(/\{[\s\S]*\}/)?.[0] || response
-  return clean
+  const clean = cleanJSON(response)
+  const obj = clean.match(/\{[\s\S]*\}/)?.[0] || clean
+  return obj
 }

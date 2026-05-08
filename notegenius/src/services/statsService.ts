@@ -1,18 +1,16 @@
-// src/services/statsService.ts
-import { getAllItems } from "./db"
+import { getAllItems } from './db'
 
-// ── Types de retour du service
 export interface SubjectStats {
   noteId: string
   totalCards: number
-  masteredCards: number  // efactor >= 2.5 ET repetition >= 3
-  weakCards: number      // efactor < 2.0
-  masteryRate: number    // pourcentage 0-100
+  masteredCards: number
+  weakCards: number
+  masteryRate: number
 }
 
 export interface HeatmapEntry {
-  date: string   // format "YYYY-MM-DD"
-  count: number  // nombre de cartes révisées ce jour
+  date: string
+  count: number
 }
 
 export interface MemorizationPoint {
@@ -24,14 +22,18 @@ export interface GlobalStats {
   totalSessions: number
   totalCardsReviewed: number
   averageCorrectRate: number
-  currentStreak: number  // jours consécutifs avec au moins 1 session
+  currentStreak: number
+}
+
+function toDateKey(timestamp: number): string {
+  return new Date(timestamp).toISOString().slice(0, 10)
 }
 
 // ── Taux de maîtrise par note
 export const getSubjectStats = async (noteId: string): Promise<SubjectStats> => {
   const [allFlashcards, allSM2Cards] = await Promise.all([
-    getAllItems("flashcards"),
-    getAllItems("sm2cards")
+    getAllItems('flashcards'),
+    getAllItems('sm2cards')
   ])
 
   const noteCards = allFlashcards.filter(card => card.noteId === noteId)
@@ -43,8 +45,9 @@ export const getSubjectStats = async (noteId: string): Promise<SubjectStats> => 
   for (const card of noteCards) {
     const sm2 = sm2Index.get(card.id)
     if (!sm2) continue
-
+    // Maîtrisée = efactor >= 2.5 ET au moins 3 révisions réussies
     if (sm2.efactor >= 2.5 && sm2.repetition >= 3) masteredCards++
+    // Faible = efactor < 2.0 (difficile à mémoriser)
     if (sm2.efactor < 2.0) weakCards++
   }
 
@@ -56,18 +59,14 @@ export const getSubjectStats = async (noteId: string): Promise<SubjectStats> => 
   return { noteId, totalCards, masteredCards, weakCards, masteryRate }
 }
 
-// ── Données heatmap : sessions groupées par jour (90 derniers jours)
+// ── Heatmap des 90 derniers jours
 export const getHeatmapData = async (): Promise<HeatmapEntry[]> => {
-  const sessions = await getAllItems("sessions")
-
+  const sessions = await getAllItems('sessions')
   const now = Date.now()
   const MS_90_DAYS = 90 * 86400000
   const cutoff = now - MS_90_DAYS
 
-  // On filtre les 90 derniers jours
   const recent = sessions.filter(s => s.date >= cutoff)
-
-  // On groupe par date "YYYY-MM-DD"
   const countByDay = new Map<string, number>()
 
   for (const session of recent) {
@@ -75,17 +74,18 @@ export const getHeatmapData = async (): Promise<HeatmapEntry[]> => {
     countByDay.set(dateKey, (countByDay.get(dateKey) ?? 0) + session.cardsReviewed)
   }
 
-  // On retourne trié par date croissante
   return Array.from(countByDay.entries())
     .map(([date, count]) => ({ date, count }))
     .sort((a, b) => a.date.localeCompare(b.date))
 }
 
-// ── Courbe de mémorisation : évolution du taux de maîtrise dans le temps
+// ── Courbe de mémorisation
 export const getMemorizationCurve = async (noteId: string): Promise<MemorizationPoint[]> => {
-  const sessions = await getAllItems("sessions")
-  const allSM2Cards = await getAllItems("sm2cards")
-  const allFlashcards = await getAllItems("flashcards")
+  const [sessions, allSM2Cards, allFlashcards] = await Promise.all([
+    getAllItems('sessions'),
+    getAllItems('sm2cards'),
+    getAllItems('flashcards')
+  ])
 
   const noteCards = allFlashcards.filter(card => card.noteId === noteId)
   const totalCards = noteCards.length
@@ -96,34 +96,26 @@ export const getMemorizationCurve = async (noteId: string): Promise<Memorization
     .filter(s => s.noteId === noteId)
     .sort((a, b) => a.date - b.date)
 
-  // Pour chaque session : on calcule le taux de maîtrise approximatif
-  // basé sur le correctCount cumulé
-  let cumulativeCorrect = 0
+  if (noteSessions.length === 0) return []
 
+  // Calculer le taux de maîtrise cumulatif par session
+  let cumulativeCorrect = 0
   return noteSessions.map(session => {
     cumulativeCorrect += session.correctCount
     const masteryRate = Math.min(
       Math.round((cumulativeCorrect / (totalCards * 3)) * 100),
       100
     )
-    return {
-      date: toDateKey(session.date),
-      masteryRate
-    }
+    return { date: toDateKey(session.date), masteryRate }
   })
 }
 
-// ── Statistiques globales (toutes notes confondues)
+// ── Stats globales
 export const getGlobalStats = async (): Promise<GlobalStats> => {
-  const sessions = await getAllItems("sessions")
+  const sessions = await getAllItems('sessions')
 
   if (sessions.length === 0) {
-    return {
-      totalSessions: 0,
-      totalCardsReviewed: 0,
-      averageCorrectRate: 0,
-      currentStreak: 0
-    }
+    return { totalSessions: 0, totalCardsReviewed: 0, averageCorrectRate: 0, currentStreak: 0 }
   }
 
   const totalCardsReviewed = sessions.reduce((sum, s) => sum + s.cardsReviewed, 0)
@@ -134,45 +126,24 @@ export const getGlobalStats = async (): Promise<GlobalStats> => {
 
   const currentStreak = calculateStreak(sessions.map(s => s.date))
 
-  return {
-    totalSessions: sessions.length,
-    totalCardsReviewed,
-    averageCorrectRate,
-    currentStreak
-  }
+  return { totalSessions: sessions.length, totalCardsReviewed, averageCorrectRate, currentStreak }
 }
 
-// ── Calcule le streak de jours consécutifs jusqu'à aujourd'hui
 function calculateStreak(timestamps: number[]): number {
   if (timestamps.length === 0) return 0
-
-  // Dates uniques triées décroissantes
   const uniqueDays = [...new Set(timestamps.map(toDateKey))].sort().reverse()
-
   const todayKey = toDateKey(Date.now())
   const yesterdayKey = toDateKey(Date.now() - 86400000)
 
-  // Si pas de session aujourd'hui ni hier → streak cassé
   if (uniqueDays[0] !== todayKey && uniqueDays[0] !== yesterdayKey) return 0
 
   let streak = 1
   for (let i = 1; i < uniqueDays.length; i++) {
     const prev = new Date(uniqueDays[i - 1])
     const curr = new Date(uniqueDays[i])
-    const diffDays = Math.round(
-      (prev.getTime() - curr.getTime()) / 86400000
-    )
-    if (diffDays === 1) {
-      streak++
-    } else {
-      break
-    }
+    const diffDays = Math.round((prev.getTime() - curr.getTime()) / 86400000)
+    if (diffDays === 1) streak++
+    else break
   }
-
   return streak
-}
-
-// ── Utilitaire : timestamp → "YYYY-MM-DD"
-function toDateKey(timestamp: number): string {
-  return new Date(timestamp).toISOString().slice(0, 10)
 }

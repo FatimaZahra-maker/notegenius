@@ -1,6 +1,6 @@
 import { getAllItems } from './db'
 import { generateQuiz } from './ai'
-import type { QuizQuestion, Flashcard } from '../types'
+import type { QuizQuestion } from '../types'
 
 export interface AdaptiveQuizQuestion extends QuizQuestion {
   noteId: string
@@ -10,6 +10,7 @@ const isWeakCard = (efactor: number, repetition: number): boolean => {
   return efactor < 2.0 || repetition < 2
 }
 
+// ── Génère un quiz adaptatif basé sur les points faibles
 export const generateAdaptiveQuiz = async (
   noteId: string
 ): Promise<AdaptiveQuizQuestion[]> => {
@@ -18,13 +19,17 @@ export const generateAdaptiveQuiz = async (
     getAllItems('sm2cards')
   ])
 
+  // Flashcards de la note seulement
   const noteFlashcards = allFlashcards.filter(card => card.noteId === noteId)
+
   if (noteFlashcards.length === 0) {
-    throw new Error('Aucune flashcard trouvée. Uploadez d\'abord un PDF.')
+    throw new Error('Aucune flashcard trouvée pour cette matière. Uploadez d\'abord un PDF dans vos matières.')
   }
 
+  // Index SM2 pour trouver les cartes faibles
   const sm2Index = new Map(allSM2Cards.map(sm2 => [sm2.flashcardId, sm2]))
 
+  // Trier : cartes faibles en premier
   const sorted = [...noteFlashcards].sort((a, b) => {
     const sm2A = sm2Index.get(a.id)
     const sm2B = sm2Index.get(b.id)
@@ -35,13 +40,17 @@ export const generateAdaptiveQuiz = async (
     return (sm2A?.efactor ?? 2.5) - (sm2B?.efactor ?? 2.5)
   })
 
-  const targetCards = sorted.slice(0, 5)
+  // Prendre les 5 cartes les plus faibles
+  const targetCards = sorted.slice(0, Math.min(5, sorted.length))
+
+  // Construire le texte pour Groq
   const quizText = targetCards
-    .map(card => `Q: ${card.front}\nR: ${card.back}`)
+    .map(card => `Concept: ${card.front}\nExplication: ${card.back}`)
     .join('\n\n')
 
   const rawQuestions = await generateQuiz(quizText)
 
+  // Enrichir avec noteId et flashcardId
   return rawQuestions.map((q: QuizQuestion, index: number) => ({
     ...q,
     id: crypto.randomUUID(),
