@@ -12,17 +12,29 @@ AI-Powered Smart Learning & Revision Platform
 # 📌 Overview
 NoteGenius is an intelligent study platform designed to help students learn faster and retain information more efficiently.
 The application combines:
+
 	• 🤖 Artificial Intelligence
+	
 	• 🧠 SM-2 Spaced Repetition Algorithm
+	
 	• 📊 Learning Analytics
+	
 	• 📚 Interactive Flashcards & Quizzes
+	
 	• 📄 PDF Processing
+	
 	• 🎯 Personalized Exam Planning
+	
 Users can upload course materials or PDFs and instantly generate:
+
 	• Smart flashcards
+	
 	• AI-powered quizzes
+	
 	• Structured summaries
+	
 	• Adaptive revision schedules
+	
 All learning data is stored locally using IndexedDB, ensuring privacy and offline accessibility.
 
 # 🚀 Main Features
