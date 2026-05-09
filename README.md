@@ -134,4 +134,3 @@ This project is licensed under the MIT License.
 ⭐ If you like this project, consider giving it a star on GitHub!
 Built with ❤️ using React, TypeScript and AI.
 
-docs: update README with deployment and installation guide
