@@ -9,7 +9,7 @@ AI-Powered Smart Learning & Revision Platform
 
 
 
-📌 Overview
+# 📌 Overview
 NoteGenius is an intelligent study platform designed to help students learn faster and retain information more efficiently.
 The application combines:
 	• 🤖 Artificial Intelligence
@@ -25,7 +25,7 @@ Users can upload course materials or PDFs and instantly generate:
 	• Adaptive revision schedules
 All learning data is stored locally using IndexedDB, ensuring privacy and offline accessibility.
 
-🚀 Main Features
+# 🚀 Main Features
 🤖 AI-Powered Learning
 	• Automatic flashcard generation from notes or PDFs
 	• AI-generated quizzes with adaptive difficulty
@@ -57,7 +57,7 @@ All learning data is stored locally using IndexedDB, ensuring privacy and offlin
 	• Local IndexedDB storage
 	• No tracking or telemetry
 
-🛠️ Tech Stack
+# 🛠️ Tech Stack
 Technology	Role
 React 19	Frontend Framework
 TypeScript	Type Safety
@@ -72,11 +72,11 @@ Vitest	Testing
 
 
 
-🚀 Live Demo
+# 🚀 Live Demo
 The application is deployed and accessible online:
 👉 https://notegenuis.netlify.app
 
-⚡ Local Installation
+# ⚡ Local Installation
 If you want to run the project locally:
 # Clone repository
 git clone   https://github.com/FatimaZahra-maker/notegenius.git
@@ -88,7 +88,7 @@ npm install
 npm run dev
 Application runs on:
 http://localhost:5173
-🔑 Environment Variables
+# 🔑 Environment Variables
 To use AI-powered features locally, create a .env file at the root of the project:
 VITE_GROQ_API_KEY=your_api_key_here
 Get your free API key from:
@@ -96,7 +96,7 @@ https://console.groq.com
 
  
 
-📁 Project Structure
+# 📁 Project Structure
 src/
 ├── algorithms/
 ├── assets/
@@ -111,7 +111,7 @@ src/
 ├──index.css
  └── main.tsx
 
-🧠 Core Concept
+# 🧠 Core Concept
 NoteGenius uses the SM-2 spaced repetition algorithm, originally developed for SuperMemo, to optimize revision intervals and improve long-term memory retention.
 The more successfully a user recalls a flashcard, the longer the interval before the next review.
 This creates:
@@ -119,16 +119,16 @@ This creates:
 	• Reduced unnecessary repetition
 	• Faster learning efficiency
 
-👥 Authors
+# 👥 Authors
 Developed by
 	• Radoui Fatima Zahra
 	• Atoufi Wassila
-Institution
+# Institution
 ENSA Berrechid — Hassan First University
 Academic Year
 2025 — 2026
 
-📄 License
+# 📄 License
 This project is licensed under the MIT License.
 
 ⭐ If you like this project, consider giving it a star on GitHub!
