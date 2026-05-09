@@ -12,12 +12,10 @@ import Dashboard from './pages/Dashboard'
 import Review from './pages/Review'
 import Settings from './pages/Settings'
 import SummaryPage from './pages/SummaryPage'
-
 const PDFExtractor = lazy(() => import('./components/PDFExtractor'))
 const FlashcardEditor = lazy(() => import('./components/FlashcardEditor'))
 const AdaptiveQuiz = lazy(() => import('./components/AdaptiveQuiz'))
 const ExamPlanner = lazy(() => import('./components/ExamPlanner'))
-
 function Navbar({ onLogout, userName, isDark, toggleDark }: {
   onLogout: () => void
   userName: string
@@ -26,7 +24,6 @@ function Navbar({ onLogout, userName, isDark, toggleDark }: {
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
-
   const links = [
     { to: '/', label: '🏠', full: 'Accueil' },
     { to: '/subjects', label: '📚', full: 'Matières' },
@@ -38,13 +35,11 @@ function Navbar({ onLogout, userName, isDark, toggleDark }: {
     { to: '/planner', label: '📅', full: 'Planner' },
     { to: '/guide', label: '📖', full: 'Guide' },
   ]
-
   return (
     <nav className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-3 flex items-center justify-between shadow-xl border-b border-gray-200 dark:border-white/10 sticky top-0 z-40">
       <Link to="/" className="text-xl font-black tracking-tight">
         Note<span className="text-violet-400">Genius</span>
       </Link>
-
       <div className="hidden md:flex gap-1 items-center">
         {links.map(l => (
           <Link key={l.to} to={l.to}
@@ -57,7 +52,6 @@ function Navbar({ onLogout, userName, isDark, toggleDark }: {
           </Link>
         ))}
       </div>
-
       <div className="hidden md:flex items-center gap-2">
         {/* Dark mode toggle */}
         <button
@@ -67,7 +61,6 @@ function Navbar({ onLogout, userName, isDark, toggleDark }: {
         >
           {isDark ? '☀️' : '🌙'}
         </button>
-
         <Link to="/settings"
           className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all
             ${location.pathname === '/settings' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}>
@@ -76,17 +69,14 @@ function Navbar({ onLogout, userName, isDark, toggleDark }: {
           </div>
           <span className="hidden lg:inline">{userName}</span>
         </Link>
-
         <button onClick={onLogout}
           className="text-gray-400 hover:text-red-400 px-3 py-2 rounded-xl text-sm hover:bg-red-500/10 transition-all">
           ↪
         </button>
       </div>
-
       <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-2xl">
         {menuOpen ? '✕' : '☰'}
       </button>
-
       {menuOpen && (
         <div className="md:hidden absolute top-14 left-0 right-0 bg-slate-900 border-t border-white/10 flex flex-col p-4 z-50 shadow-2xl">
           {links.map(l => (
@@ -113,24 +103,19 @@ function Navbar({ onLogout, userName, isDark, toggleDark }: {
     </nav>
   )
 }
-
 function AppContent() {
   const [user, setUser] = useState<User | null>(getCurrentUser)
   const { isDark, toggle } = useDarkMode()
-
   function handleLogout() {
     logout()
     setUser(null)
   }
-
   function handleLoginSuccess() {
     setUser(getCurrentUser())
   }
-
   if (!user) {
     return <Login onSuccess={handleLoginSuccess} />
   }
-
   return (
       <div className="min-h-screen pt-16 bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
       <Toaster position="top-right" toastOptions={{
@@ -165,7 +150,6 @@ function AppContent() {
     </div>
   )
 }
-
 function App() {
   return (
     <BrowserRouter>
@@ -173,5 +157,4 @@ function App() {
     </BrowserRouter>
   )
 }
-
 export default App
