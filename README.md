@@ -39,53 +39,92 @@ All learning data is stored locally using IndexedDB, ensuring privacy and offlin
 
 # 🚀 Main Features
 🤖 AI-Powered Learning
+
 	• Automatic flashcard generation from notes or PDFs
+	
 	• AI-generated quizzes with adaptive difficulty
+	
 	• Smart educational summaries
+	
 	• Personalized exam revision planning
+	
 🧠 Spaced Repetition System
+
 	• Implementation of the SM-2 algorithm
+	
 	• Dynamic review intervals
+	
 	• Daily revision queue
+	
 	• Learning progression tracking
+	
 📊 Analytics Dashboard
+
 	• Memorization statistics
+	
 	• Activity heatmaps
+	
 	• Subject mastery tracking
+	
 	• Learning performance indicators
+	
 📚 Subject Management
+
 	• Create and organize subjects
+	
 	• Upload and manage PDFs
+	
 	• Track revision progress by subject
+	
 	• Search and filter learning materials
+	
 🎨 Modern User Experience
+
 	• Responsive design
+	
 	• Dark / Light mode
+	
 	• Smooth animations with Framer Motion
+	
 	• Clean and intuitive interface
+	
 🔒 Privacy-Focused Architecture
+
 	• 100% client-side application
+	
 	• No external database required
+	
 	• Local IndexedDB storage
+	
 	• No tracking or telemetry
 
 # 🛠️ Tech Stack
 Technology	Role
-React 19	Frontend Framework
-TypeScript	Type Safety
-Vite	Build Tool
-TailwindCSS	Styling
-Groq API	AI Generation
-IndexedDB	Local Database
+
+React 19    	Frontend Framework
+
+TypeScript  	Type Safety
+
+Vite	        Build Tool
+
+TailwindCSS  	Styling
+
+Groq API	    AI Generation
+
+IndexedDB	    Local Database
+
 Framer Motion	Animations
-PDF.js	PDF Text Extraction
-Vitest	Testing
+
+PDF.js	        PDF Text Extraction
+
+Vitest	        Testing
 
 
 
 
 # 🚀 Live Demo
 The application is deployed and accessible online:
+
 👉 https://notegenuis.netlify.app
 
 # ⚡ Local Installation
@@ -98,37 +137,59 @@ cd notegenius
 npm install
 # Start development server
 npm run dev
+
 Application runs on:
+
 http://localhost:5173
 # 🔑 Environment Variables
 To use AI-powered features locally, create a .env file at the root of the project:
+
 VITE_GROQ_API_KEY=your_api_key_here
+
 Get your free API key from:
+
 https://console.groq.com
 
  
 
 # 📁 Project Structure
 src/
+
 ├── algorithms/
+
 ├── assets/
+
 ├── components/
+
 ├── hooks/ 
+
 ├──pages/
+
 ├──services/
+
 ├── types/
+
 ├──utils/
+
 ├──App.css
+
 ├──App.tsx
+
 ├──index.css
- └── main.tsx
+
+└── main.tsx
 
 # 🧠 Core Concept
 NoteGenius uses the SM-2 spaced repetition algorithm, originally developed for SuperMemo, to optimize revision intervals and improve long-term memory retention.
+
 The more successfully a user recalls a flashcard, the longer the interval before the next review.
+
 This creates:
+
 	• Better retention
+	
 	• Reduced unnecessary repetition
+	
 	• Faster learning efficiency
 
 # 👥 Authors
@@ -137,6 +198,7 @@ Developed by
 	• Atoufi Wassila
 # Institution
 ENSA Berrechid — Hassan First University
+
 Academic Year
 2025 — 2026
 
