@@ -153,7 +153,7 @@ export default function ExamPlanner() {
             <div className="relative">
               <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200" />
               <div className="flex flex-col gap-4">
-                {plan.weeklyPlans.map((week, i) => (
+                {plan.weeklyPlans.map((week) => (
                   <div key={week.week} className="relative flex gap-6">
                     <div className="w-12 h-12 bg-gradient-to-r from-violet-600 to-purple-600 rounded-2xl flex items-center justify-center text-white font-black text-sm flex-shrink-0 z-10 shadow-lg">
                       S{week.week}

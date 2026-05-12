@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { login, register, logout, getCurrentUser } from '../services/auth'
 import type { User } from '../services/auth'
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(getCurrentUser)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleLogin = useCallback(async (email: string, password: string) => {

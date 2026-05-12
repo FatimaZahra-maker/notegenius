@@ -81,7 +81,7 @@ export const getHeatmapData = async (): Promise<HeatmapEntry[]> => {
 
 // ── Courbe de mémorisation
 export const getMemorizationCurve = async (noteId: string): Promise<MemorizationPoint[]> => {
-  const [sessions, allSM2Cards, allFlashcards] = await Promise.all([
+  const [sessions, _allSM2Cards, allFlashcards] = await Promise.all([
     getAllItems('sessions'),
     getAllItems('sm2cards'),
     getAllItems('flashcards')

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
 import { motion, AnimatePresence } from 'framer-motion'
-import { generateFlashcards, generateQuiz, generateSummary } from '../services/ai'
+import { generateFlashcards, generateQuiz } from '../services/ai'
 import { createAndSaveSummary } from '../services/summaryService'
 import { saveItem } from '../services/db'
 import { createInitialSM2Data } from '../algorithms/sm2'
