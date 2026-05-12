@@ -1,23 +1,21 @@
+
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStats } from '../hooks/useStats'
 import { getAllItems } from '../services/db'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import type { Note } from '../types'
-
 export default function Dashboard() {
   const navigate = useNavigate()
   const [notes, setNotes] = useState<Note[]>([])
   const [noteId, setNoteId] = useState('default')
   const { subjectStats, heatmapData, memorizationCurve, globalStats, isLoading } = useStats(noteId)
-
   useEffect(() => {
     getAllItems('notes').then(n => {
       setNotes(n)
       if (n.length > 0) setNoteId(n[0].id)
     })
   }, [])
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center transition-colors duration-300">
@@ -25,11 +23,9 @@ export default function Dashboard() {
       </div>
     )
   }
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300 p-8">
       <div className="max-w-6xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -46,7 +42,6 @@ export default function Dashboard() {
             </select>
           )}
         </div>
-
         {/* KPIs */}
         {globalStats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -66,9 +61,7 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-
           {/* Courbe mémorisation */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm">
             <h2 className="font-bold text-gray-800 dark:text-white mb-4">📈 Courbe de mémorisation</h2>
@@ -94,7 +87,6 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-
           {/* Stats matière */}
           {subjectStats && (
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm">
@@ -130,7 +122,6 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-
         {/* Heatmap */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm mb-6">
           <h2 className="font-bold text-gray-800 dark:text-white mb-4">🗓️ Activité des 90 derniers jours</h2>
@@ -154,7 +145,6 @@ export default function Dashboard() {
             <span className="text-xs text-gray-400 dark:text-gray-500">Plus</span>
           </div>
         </div>
-
         {/* CTA */}
         <div className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-3xl p-8 text-white flex items-center justify-between">
           <div>
@@ -166,7 +156,6 @@ export default function Dashboard() {
             Réviser maintenant →
           </button>
         </div>
-
       </div>
     </div>
   )
