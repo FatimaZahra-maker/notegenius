@@ -125,7 +125,7 @@ Vitest	        Testing
 # 🚀 Live Demo
 The application is deployed and accessible online:
 
-👉 https://notegenuis.netlify.app
+👉https://notegenus.netlify.app/
 
 # ⚡ Local Installation
 If you want to run the project locally:
